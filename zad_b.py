@@ -57,5 +57,5 @@ def multiply_numbers_comprehension(list_of_numbers : list) -> list :
     return transformed_list
 
 test_list_2 = [2,4,6,8,10]
-# Test for solution
+# Test comprehension solution
 print(f'Solution using list comprehension. Before transformation: {test_list_2} after transformation:{multiply_numbers_comprehension(test_list_2)}')
