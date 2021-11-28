@@ -56,7 +56,7 @@ class Kurs:
         self.__czas_minuty = value
 
     @property
-    def pojazd(self) -> float:
+    def pojazd(self) -> Pojazd:
         return self.__pojazd
 
     @pojazd.setter
