@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_restful import Resource, Api
+
 from endpoints.movies_endpoint import Movies
 from endpoints.tags_endpoint import Tags
 from endpoints.rating_endpoint import Ratings
@@ -8,7 +9,6 @@ from endpoints.links_endpoint import Links
 
 app = Flask(__name__)
 api = Api(app)
-
 
 class HelloWorld(Resource):
     def get(self):
