@@ -138,6 +138,7 @@ class Predictor:
             scores_to_visualize = np.array([self.__predicted_scores[i]
                                             for i in idxes])
 
+        drawn_objects_counter = 0
         # Putting the boxes and labels on the image
         for score, (ymin, xmin, ymax, xmax), label in zip(
                                                     scores_to_visualize,
@@ -156,6 +157,8 @@ class Predictor:
                         (0, 255, 0), 1, cv2.LINE_AA)
             # cv2.putText(img_boxes, score_txt, (xmax, ymax-10), font, 0.5,
             #             (255, 0, 0), 1, cv2.LINE_AA)
+            drawn_objects_counter += 1
+        print(f'Number of objects drawn: {drawn_objects_counter}')
 
         return img_boxes
 
