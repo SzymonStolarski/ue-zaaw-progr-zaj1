@@ -1,6 +1,8 @@
 from time import time
+
 import pandas as pd
 import numpy as np
+import tensorflow
 import tensorflow_hub as hub
 import cv2
 
@@ -14,16 +16,46 @@ MODEL_DICTIONARY = {
 
 class Predictor:
     """
-    # TODO: add docstring
+    Prediction class that stores the tensorflow object detection model,
+    runs the predictions on a tensor object and draws the boxes with
+    the predictions on an image.
+
+    For the purpose of this project, models are downloaded from TensorFlow Hub
+    website (see reference) and stored locally in components/models.
+
+    Parameters
+    -----------
+    model name : str
+        Name of the model, that corresponds to the one of the keys
+        in MODEL_DICTIONARY, which stores the paths to given model.
+        Current list of locally available models:
+            - efficentdet_lite2,
+            - efficentdet_lite4.
+
+    References
+    -----------
+    https://tfhub.dev/s?module-type=image-object-detection
+
+    Example
+    -----------
+    >>> predictor = Predictor('efficientdet_lite2')
+    >>> predictor.load_model()
+    starting to load efficientdet_lite2 model...
+    efficientdet_lite2 model loaded!
+    >>> predictor.predict(rgb_tensor)
+    >>> image_with_boxes = predictor.draw_boxes(rgb_image, min_score=0.2,
+                                            filter_predictions=['person'])
     """
     def __init__(self, model_name: str) -> None:
         self.__model_name = model_name
-        # self.__min_score = min_score
-        # self.__filter_predictions = filter_predictions
         self.__is_model_loaded = False
         self.__is_prediction_done = False
 
-    def load_model(self):
+    def load_model(self) -> None:
+        """
+        Function that loads the selected TensorFlow object detection model
+        specified in __init__.
+        """
         # Loading model - for this project's purpose storing models locally
         print(f'starting to load {self.__model_name} model...')
         self.model = hub.load(MODEL_DICTIONARY[self.__model_name])
@@ -36,9 +68,18 @@ class Predictor:
         self.__is_model_loaded = True
         print(f'{self.__model_name} model loaded!')
 
-    def predict(self, tensor):
+    def predict(self,
+                tensor: tensorflow.int32) -> None:
+        """
+        Function that makes prediction on given tensor.
+
+        Parameters
+        -----------
+        tensor : tensorflow.python.python.framework.ops.EagerTensor
+            TensorFlow tensor object that stores the image.
+        """
         self.__check_is_model_loaded()
-        # Creating prediction
+        # Creating prediction and measure time
         start_measuring_time = time()
         boxes, scores, classes, _ = self.model(tensor)
         self.__prediction_time = round(time() - start_measuring_time, 2)
@@ -55,8 +96,26 @@ class Predictor:
 
         self.__is_prediction_done = True
 
-    def draw_boxes(self, img, min_score: float = 0.4,
-                   filter_predictions: list[str] = None):
+    def draw_boxes(self, img: np.ndarray, min_score: float = 0.4,
+                   filter_predictions: list[str] = None) -> np.ndarray:
+        """
+        Function which draws boxes of predictions on an image.
+
+        Parameters
+        -----------
+        img : np.ndarray
+            Image on which the boxes should be drawn.
+        min_score : float
+            Minimum prediction confidence level of the drawn objects.
+        filter_predictions : list[str], optional
+            List of labels that should be drawn only, example:
+            filter_predictions = ['person']
+
+        Returns
+        ----------
+        np.ndarray
+            Image containing the prediction boxes.
+        """
         self.__check_is_prediction_done()
         bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         img_boxes = bgr.copy()
@@ -91,23 +150,23 @@ class Predictor:
 
             score_txt = f'{100 * round(score,0)}'
             img_boxes = cv2.rectangle(img_boxes, (xmin, ymax), (xmax, ymin),
-                                      (0, 255, 0), 1)
+                                      (255, 0, 255), 1)
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(img_boxes, label, (xmin, ymax-10), font, 0.5,
-                        (255, 0, 0), 1, cv2.LINE_AA)
-            cv2.putText(img_boxes, score_txt, (xmax, ymax-10), font, 0.5,
-                        (255, 0, 0), 1, cv2.LINE_AA)
+                        (0, 255, 0), 1, cv2.LINE_AA)
+            # cv2.putText(img_boxes, score_txt, (xmax, ymax-10), font, 0.5,
+            #             (255, 0, 0), 1, cv2.LINE_AA)
 
         return img_boxes
 
-    def __check_is_model_loaded(self):
+    def __check_is_model_loaded(self) -> None:
         if not self.__is_model_loaded:
             raise NotLoadedModelError(
                 f"This instance of {self.__class__.__name__} has not "
                 f"a loaded model yet; please call `load_model` first."
             )
 
-    def __check_is_prediction_done(self):
+    def __check_is_prediction_done(self) -> None:
         if not self.__is_prediction_done:
             raise PredictionsNotDoneError(
                 f"This instance of {self.__class__.__name__} has not "
@@ -117,6 +176,7 @@ class Predictor:
 
     @property
     def model_name(self) -> str:
+        """str: Returns the model_name"""
         return self.__model_name
 
     @model_name.setter
@@ -125,20 +185,31 @@ class Predictor:
 
     @property
     def is_model_loaded(self) -> bool:
+        """
+        bool: Information if the TensforFlow object detection
+            model has been loaded to the Predictor instance.
+        """
         return self.__is_model_loaded
 
     @property
     def is_prediction_done(self) -> bool:
+        """
+        bool: Information if the Predictor instance has made
+            predictions on a tensor.
+        """
         return self.__is_prediction_done
 
     @property
-    def predicted_labels(self) -> np.array:
+    def predicted_labels(self) -> np.ndarray:
+        """np.ndarray: Array of prediction labels."""
         return self.__predicted_labels
 
     @property
-    def predicted_boxes(self) -> np.array:
+    def predicted_boxes(self) -> np.ndarray:
+        """np.ndarray: Array of prediction boxes coordinates."""
         return self.__predicted_boxes
 
     @property
-    def predicted_labels(self) -> np.array:
-        return self.__predicted_labels
+    def predicted_scores(self) -> np.ndarray:
+        """np.ndarray: Array of predicted scores."""
+        return self.__predicted_scores
