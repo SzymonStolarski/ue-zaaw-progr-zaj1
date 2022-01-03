@@ -4,7 +4,6 @@ import cv2
 
 from components.image_preprocessing.image_preprocessor import ImagePreprocessor
 from components.predictor.predictor import Predictor
-from main_camera_image import MIN_SCORE
 
 
 FOLDER_PATH = 'input_images'

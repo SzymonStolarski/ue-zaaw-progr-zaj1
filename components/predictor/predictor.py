@@ -48,6 +48,7 @@ class Predictor:
     """
     def __init__(self, model_name: str) -> None:
         self.__model_name = model_name
+        self.__check_if_model_included()
         self.__is_model_loaded = False
         self.__is_prediction_done = False
 
@@ -161,6 +162,13 @@ class Predictor:
         print(f'Number of objects drawn: {drawn_objects_counter}')
 
         return img_boxes
+
+    def __check_if_model_included(self) -> None:
+        if self.__model_name not in MODEL_DICTIONARY.keys():
+            raise ModelNotIncludedError(
+                f"Selected model provided in model_name not available "
+                f"locally. Available models: {list(MODEL_DICTIONARY.keys())}"
+            )
 
     def __check_is_model_loaded(self) -> None:
         if not self.__is_model_loaded:
