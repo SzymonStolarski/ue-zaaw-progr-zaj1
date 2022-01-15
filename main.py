@@ -2,6 +2,7 @@ from classes.dieta import Dieta
 from classes.osoba import *
 from classes.zamowienie import Zamowienie
 
+
 dieta_1 = Dieta(1, 'Spalacz fetu max', 30.501111, 1200)
 dieta_2 = Dieta(2, 'Bodybuilder 3000', 60, 4000)
 
